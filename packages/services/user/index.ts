@@ -3,8 +3,9 @@ import { randomBytes, createHmac } from 'node:crypto'
 import * as JWT from 'jsonwebtoken'
 import {db, eq} from '@repo/database'
 import {usersTable } from '@repo/database/models/user'
-import { createUserWithEmailAndPasswordInput, CreateUserWithEmailAndPasswordInputType, GenerateTokenPayloadType, generateUserTokenPayload, signInUserWithEmailAndPasswordInput, SignInUserWithEmailAndPasswordInputType } from './model'
+import { createUserWithEmailAndPasswordInput, CreateUserWithEmailAndPasswordInputType, GenerateUserTokenPayloadType, generateUserTokenPayload, signInUserWithEmailAndPasswordInput, SignInUserWithEmailAndPasswordInputType } from './model'
 import { env } from '../env';
+import { email } from 'zod';
 
 class UserService {
 
@@ -14,7 +15,7 @@ class UserService {
         return result[0];
     }
 
-    private async generateUserToken(payload: GenerateTokenPayloadType) {
+    private async generateUserToken(payload: GenerateUserTokenPayloadType) {
         const {id} = await generateUserTokenPayload.parseAsync(payload) 
         const token =JWT.sign({id}, env.JWT_SECRET)
         return { token }
@@ -23,6 +24,28 @@ class UserService {
     private async generateHash(salt: string, password: string) {
         return createHmac('sha256', salt).update(password).digest('hex')
 
+    }
+
+    private async verifyUserToken(token: string): Promise<GenerateUserTokenPayloadType> {
+        try{
+            const verificationResult  = JWT.verify(token, env.JWT_SECRET) as GenerateUserTokenPayloadType
+            return verificationResult
+        }catch(error) {
+            throw new Error('Invalid Token')
+        }
+    }
+
+    private async getUserInfoById(id: string) {
+        const user = await db.select({
+            id: usersTable.id,
+            email: usersTable.email,
+            fullName: usersTable.fullName,
+            profileImageUrl: usersTable.profileImageUrl
+        }).from(usersTable).where(eq(usersTable.id, id))
+
+        if(!user || user.length === 0) throw new Error(`User with ID: ${id} does not exists`)
+
+        return user[0]!
     }
 
     public async createUserWithEmailAndPassword(payload: CreateUserWithEmailAndPasswordInputType) {
@@ -67,6 +90,12 @@ class UserService {
             id: existingUser.id,
             token
         }
+    }
+
+    public async verifyAndDecodeUserToken(token: string) {
+        const { id } = await this.verifyUserToken(token)
+        const userInfo = await this.getUserInfoById(id)
+        return { ...userInfo }
     }
 }
 
