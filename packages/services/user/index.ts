@@ -5,7 +5,6 @@ import {db, eq} from '@repo/database'
 import {usersTable } from '@repo/database/models/user'
 import { createUserWithEmailAndPasswordInput, CreateUserWithEmailAndPasswordInputType, GenerateUserTokenPayloadType, generateUserTokenPayload, signInUserWithEmailAndPasswordInput, SignInUserWithEmailAndPasswordInputType } from './model'
 import { env } from '../env';
-import { email } from 'zod';
 
 class UserService {
 
@@ -35,7 +34,7 @@ class UserService {
         }
     }
 
-    private async getUserInfoById(id: string) {
+    public async getUserInfoById(id: string) {
         const user = await db.select({
             id: usersTable.id,
             email: usersTable.email,
@@ -77,7 +76,7 @@ class UserService {
         const {email, password} = await signInUserWithEmailAndPasswordInput.parseAsync(payload)
 
         const existingUser = await this.getUserByEmail(email)
-        if(!existingUser) throw new Error(`User with this emial: ${email} does not exists`)
+        if(!existingUser) throw new Error(`User with this email: ${email} does not exists`)
         if(!existingUser.password || !existingUser.salt) throw new Error(`Invalid authentication method`)
         
         const hash = await this.generateHash(existingUser.salt, password)
@@ -94,8 +93,7 @@ class UserService {
 
     public async verifyAndDecodeUserToken(token: string) {
         const { id } = await this.verifyUserToken(token)
-        const userInfo = await this.getUserInfoById(id)
-        return { ...userInfo }
+        return { id }
     }
 }
 
