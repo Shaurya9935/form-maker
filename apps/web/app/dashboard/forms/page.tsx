@@ -1,7 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { Plus, Loader2 } from "lucide-react"
+import Link from "next/link"
+import { Plus, Loader2, Edit, FileText } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "~/components/ui/button"
 import {
@@ -16,13 +17,29 @@ import {
 import { Input } from "~/components/ui/input"
 import { Label } from "~/components/ui/label"
 import { Textarea } from "~/components/ui/textarea"
-import { useCreateForm } from "~/hooks/api/form"
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "~/components/ui/table"
+import {
+  Empty,
+  EmptyHeader,
+  EmptyTitle,
+  EmptyDescription,
+  EmptyMedia,
+} from "~/components/ui/empty"
+import { useCreateForm, useGetForms } from "~/hooks/api/form"
 
 const FormsPage = () => {
   const [open, setOpen] = useState(false)
   const [title, setTitle] = useState("")
   const [description, setDescription] = useState("")
 
+  const { forms, isLoading } = useGetForms()
   const { createFormAsync, status } = useCreateForm()
   const isSubmitting = status === "pending"
 
@@ -122,6 +139,61 @@ const FormsPage = () => {
             </form>
           </DialogContent>
         </Dialog>
+      </div>
+
+      <div className="px-4 lg:px-6">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        ) : !forms || forms.length === 0 ? (
+          <Empty className="my-8 border rounded-lg">
+            <EmptyMedia variant="icon">
+              <FileText />
+            </EmptyMedia>
+            <EmptyHeader>
+              <EmptyTitle>No forms found</EmptyTitle>
+              <EmptyDescription>
+                You haven't created any forms yet. Click "Create Form" above to get started.
+              </EmptyDescription>
+            </EmptyHeader>
+          </Empty>
+        ) : (
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Title</TableHead>
+                  <TableHead>Description</TableHead>
+                  <TableHead>Created At</TableHead>
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {forms.map((form) => (
+                  <TableRow key={form.id}>
+                    <TableCell className="font-medium">{form.title}</TableCell>
+                    <TableCell className="text-muted-foreground max-w-xs truncate">
+                      {form.description || "-"}
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {form.createdAt
+                        ? new Date(form.createdAt).toLocaleDateString()
+                        : "-"}
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/dashboard/forms/${form.id}`}>
+                          <Edit className="mr-1 h-3.5 w-3.5" />
+                        </Link>
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
       </div>
     </div>
   )
