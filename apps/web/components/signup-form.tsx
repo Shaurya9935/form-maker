@@ -12,7 +12,8 @@ import {
 import { Input } from "~/components/ui/input"
 import { useForm } from "react-hook-form"
 import { trpc } from "~/trpc/client";
-import { useSignup } from "~/hooks/auth";
+import { useSignup } from "~/hooks/api/auth";
+import { useRouter} from 'next/navigation'
 
 type SignupFormValues = {
   name: string
@@ -25,6 +26,8 @@ export function SignupForm({
   className,
   ...props
 }: React.ComponentProps<"form">) {
+
+  const router = useRouter();
   const {createUserWithEmailAndPasswordAsync} = useSignup();
   const { register, handleSubmit } = useForm<SignupFormValues>()
 
@@ -32,6 +35,7 @@ export function SignupForm({
     console.log(values);
     const {id} = await createUserWithEmailAndPasswordAsync({email:values.email, fullName: values.name, password: values.password})
     console.log(`User created with ${id}`)
+    router.replace('/dashboard' )
   }
 
   return (

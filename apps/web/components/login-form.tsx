@@ -18,6 +18,7 @@ import {
 import { Input } from "~/components/ui/input"
 import { useForm } from "react-hook-form"
 import { useSignIn } from "~/hooks/api/auth";
+import { useRouter } from 'next/navigation'
 
 type LoginFormValues = {
   email: string
@@ -28,6 +29,7 @@ export function LoginForm({
   className,
   ...props
 }: React.ComponentProps<"div">) {
+  const router = useRouter();
 
   const {signInUserWithEmailAndPasswordAsync} = useSignIn()
   const { register, handleSubmit } = useForm<LoginFormValues>()
@@ -38,6 +40,7 @@ export function LoginForm({
       email: values.email,
       password: values.password
     })
+    router.replace('/dashboard')
   }
 
   return (
