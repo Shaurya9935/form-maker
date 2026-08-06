@@ -15,6 +15,13 @@
       "when": 1785962923648,
       "tag": "0001_faulty_monster_badoon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786046999624,
+      "tag": "0002_sleepy_squadron_supreme",
+      "breakpoints": true
     }
   ]
 }
