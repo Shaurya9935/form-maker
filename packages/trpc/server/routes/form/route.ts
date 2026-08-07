@@ -1,5 +1,5 @@
 import { formService, formFieldService } from "../../services";
-import { authenticatedProcedure, router } from "../../trpc";
+import { authenticatedProcedure, publicProcedure, router } from "../../trpc";
 import { generatePath } from "../../utils/path-generator";
 import {
   createFormInputModel,
@@ -14,12 +14,28 @@ import {
   getFieldsOutputModel,
   deleteFieldInputModel,
   deleteFieldOutputModel,
+  getFormInputModel,
+  getFormOutputModel,
 } from "./model";
 
 const TAGS = ["Form"];
 const getPath = generatePath("/form");
 
 export const formRouter = router({
+  getForm: publicProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/getForm"),
+        tags: TAGS,
+      },
+    })
+    .input(getFormInputModel)
+    .output(getFormOutputModel)
+    .query(async ({ input }) => {
+      return formService.getFormById({ formId: input.formId });
+    }),
+
   createForm: authenticatedProcedure
     .meta({
       openapi: {
@@ -64,59 +80,62 @@ export const formRouter = router({
       return forms;
     }),
 
-  getFields: authenticatedProcedure.meta({
-        openapi: {
-            method: 'POST',
-            path: getPath('/getFields'),
-            tags: TAGS,
-            protect: true,
-        }
+  getFields: publicProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/getFields"),
+        tags: TAGS,
+      },
     })
-        .input(getFieldsInputModel)
-        .output(getFieldsOutputModel)
-        .query(async ({ input }) => {
-            return formFieldService.getFields({ formId: input.formId })
-        }),
+    .input(getFieldsInputModel)
+    .output(getFieldsOutputModel)
+    .query(async ({ input }) => {
+      return formFieldService.getFields({ formId: input.formId });
+    }),
 
-    createField: authenticatedProcedure.meta({
-        openapi: {
-            method: 'POST',
-            path: getPath('/createField'),
-            tags: TAGS,
-            protect: true,
-        }
+  createField: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/createField"),
+        tags: TAGS,
+        protect: true,
+      },
     })
-        .input(createFieldInputModel)
-        .output(createFieldOutputModel)
-        .mutation(async ({ input }) => {
-            return formFieldService.createField(input)
-        }),
+    .input(createFieldInputModel)
+    .output(createFieldOutputModel)
+    .mutation(async ({ input }) => {
+      return formFieldService.createField(input);
+    }),
 
-    updateField: authenticatedProcedure.meta({
-        openapi: {
-            method: 'POST',
-            path: getPath('/updateField'),
-            tags: TAGS,
-            protect: true,
-        }
+  updateField: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/updateField"),
+        tags: TAGS,
+        protect: true,
+      },
     })
-        .input(updateFieldInputModel)
-        .output(updateFieldOutputModel)
-        .mutation(async ({ input }) => {
-            return formFieldService.updateField(input)
-        }),
+    .input(updateFieldInputModel)
+    .output(updateFieldOutputModel)
+    .mutation(async ({ input }) => {
+      return formFieldService.updateField(input);
+    }),
 
-    deleteField: authenticatedProcedure.meta({
-        openapi: {
-            method: 'POST',
-            path: getPath('/deleteField'),
-            tags: TAGS,
-            protect: true,
-        }
+  deleteField: authenticatedProcedure
+    .meta({
+      openapi: {
+        method: "POST",
+        path: getPath("/deleteField"),
+        tags: TAGS,
+        protect: true,
+      },
     })
-        .input(deleteFieldInputModel)
-        .output(deleteFieldOutputModel)
-        .mutation(async ({ input }) => {
-            return formFieldService.deleteField(input)
-        }),
+    .input(deleteFieldInputModel)
+    .output(deleteFieldOutputModel)
+    .mutation(async ({ input }) => {
+      return formFieldService.deleteField(input);
+    }),
 });

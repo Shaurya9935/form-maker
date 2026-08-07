@@ -148,3 +148,20 @@ export const useDeleteField = () => {
         status
     }
 }
+
+export const useGetForm = (formId: string) => {
+    const { data: form, error, isFetched, isFetching, isLoading, status } = trpc.form.getForm.useQuery(
+        { formId },
+        { enabled: !!formId }
+    )
+
+    return {
+        form,
+        error,
+        isFetched,
+        isFetching,
+        isLoading,
+        status
+    }
+}
+

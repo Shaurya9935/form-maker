@@ -29,6 +29,13 @@
       "when": 1786048869578,
       "tag": "0003_strange_xorn",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1786119350212,
+      "tag": "0004_light_proemial_gods",
+      "breakpoints": true
     }
   ]
 }
