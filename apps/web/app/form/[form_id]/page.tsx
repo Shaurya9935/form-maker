@@ -15,7 +15,7 @@ import {
   EmptyDescription,
   EmptyMedia,
 } from "~/components/ui/empty"
-import { useGetForm } from "~/hooks/api/form"
+import { useGetForm, useSubmitForm } from "~/hooks/api/form"
 
 export default function PublicFormPage({
   params,
@@ -24,21 +24,40 @@ export default function PublicFormPage({
 }) {
   const { form_id: formId } = use(params)
   const { form, isLoading } = useGetForm(formId)
+  const { submitFormAsync, status: submitStatus } = useSubmitForm()
 
   const [formData, setFormData] = useState<Record<string, string>>({})
   const [isSubmitted, setIsSubmitted] = useState(false)
 
-  const handleChange = (labelKey: string, value: string) => {
+  const isSubmitting = submitStatus === "pending"
+
+  const handleChange = (fieldId: string, value: string) => {
     setFormData((prev) => ({
       ...prev,
-      [labelKey]: value,
+      [fieldId]: value,
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    toast.success("Form response recorded!")
-    setIsSubmitted(true)
+
+    if (!form || !form.fields) return
+
+    const values = form.fields.map((field) => ({
+      formFieldId: field.id,
+      value: formData[field.id] || "",
+    }))
+
+    try {
+      await submitFormAsync({
+        formId,
+        values,
+      })
+      toast.success("Form response recorded!")
+      setIsSubmitted(true)
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to submit form response")
+    }
   }
 
   if (isLoading) {
@@ -81,7 +100,13 @@ export default function PublicFormPage({
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-2">
-            <Button variant="outline" onClick={() => setIsSubmitted(false)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setFormData({})
+                setIsSubmitted(false)
+              }}
+            >
               Submit Another Response
             </Button>
           </CardContent>
@@ -111,7 +136,7 @@ export default function PublicFormPage({
             <Card className="border shadow-xs">
               <CardContent className="pt-6 space-y-6">
                 {form.fields.map((field) => {
-                  const value = formData[field.labelKey] || ""
+                  const value = formData[field.id] || ""
 
                   return (
                     <div key={field.id} className="space-y-2">
@@ -129,7 +154,8 @@ export default function PublicFormPage({
                           placeholder={field.placeholder || ""}
                           required={field.isRequired}
                           value={value}
-                          onChange={(e) => handleChange(field.labelKey, e.target.value)}
+                          disabled={isSubmitting}
+                          onChange={(e) => handleChange(field.id, e.target.value)}
                         />
                       )}
 
@@ -140,7 +166,8 @@ export default function PublicFormPage({
                           placeholder={field.placeholder || ""}
                           required={field.isRequired}
                           value={value}
-                          onChange={(e) => handleChange(field.labelKey, e.target.value)}
+                          disabled={isSubmitting}
+                          onChange={(e) => handleChange(field.id, e.target.value)}
                         />
                       )}
 
@@ -151,7 +178,8 @@ export default function PublicFormPage({
                           placeholder={field.placeholder || "example@email.com"}
                           required={field.isRequired}
                           value={value}
-                          onChange={(e) => handleChange(field.labelKey, e.target.value)}
+                          disabled={isSubmitting}
+                          onChange={(e) => handleChange(field.id, e.target.value)}
                         />
                       )}
 
@@ -162,15 +190,17 @@ export default function PublicFormPage({
                           placeholder={field.placeholder || ""}
                           required={field.isRequired}
                           value={value}
-                          onChange={(e) => handleChange(field.labelKey, e.target.value)}
+                          disabled={isSubmitting}
+                          onChange={(e) => handleChange(field.id, e.target.value)}
                         />
                       )}
 
                       {field.type === "YES_NO" && (
                         <RadioGroup
                           value={value}
-                          onValueChange={(val) => handleChange(field.labelKey, val)}
+                          onValueChange={(val) => handleChange(field.id, val)}
                           className="flex gap-4 pt-1"
+                          disabled={isSubmitting}
                         >
                           <div className="flex items-center space-x-2">
                             <RadioGroupItem value="yes" id={`${field.id}-yes`} />
@@ -197,8 +227,15 @@ export default function PublicFormPage({
                 })}
 
                 <div className="pt-4 border-t flex justify-end">
-                  <Button type="submit" className="w-full sm:w-auto">
-                    Submit Response
+                  <Button type="submit" className="w-full sm:w-auto" disabled={isSubmitting}>
+                    {isSubmitting ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Response"
+                    )}
                   </Button>
                 </div>
               </CardContent>
