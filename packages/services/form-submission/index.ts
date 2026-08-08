@@ -1,6 +1,11 @@
-import { db } from '@repo/database'
+import { db, eq, desc } from '@repo/database'
 import { formSubmissionTable } from '@repo/database/models/form-submission'
-import { createSubmissionInput, CreateSubmissionInputType } from './model'
+import {
+  createSubmissionInput,
+  CreateSubmissionInputType,
+  getFormSubmissionsByFormIdInput,
+  GetFormSubmissionsByFormIdInputType,
+} from './model'
 
 class FormSubmissionService {
   public async createSubmission(payload: CreateSubmissionInputType) {
@@ -21,6 +26,24 @@ class FormSubmissionService {
     }
 
     return { id: result[0].id }
+  }
+
+  public async getFormSubmissionsByFormId(payload: GetFormSubmissionsByFormIdInputType) {
+    const { formId } = await getFormSubmissionsByFormIdInput.parseAsync(payload)
+
+    const submissions = await db
+      .select({
+        id: formSubmissionTable.id,
+        formId: formSubmissionTable.formId,
+        values: formSubmissionTable.values,
+        createdAt: formSubmissionTable.createdAt,
+        updatedAt: formSubmissionTable.updatedAt,
+      })
+      .from(formSubmissionTable)
+      .where(eq(formSubmissionTable.formId, formId))
+      .orderBy(desc(formSubmissionTable.createdAt))
+
+    return submissions
   }
 }
 

@@ -10,6 +10,7 @@ import {
   Trash2,
   Layers,
   Sparkles,
+  FileSpreadsheet,
 } from "lucide-react"
 import { toast } from "sonner"
 import { Button } from "~/components/ui/button"
@@ -188,14 +189,23 @@ export default function FormBuilderPage({
           </div>
         </div>
 
-        {/* Add Field Button & Dialog */}
-        <Dialog open={addOpen} onOpenChange={setAddOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Add Field
-            </Button>
-          </DialogTrigger>
+        <div className="flex items-center gap-2">
+          <Button asChild variant="outline">
+            <Link href={`/dashboard/forms/${formId}/submissions`}>
+              <FileSpreadsheet className="mr-2 h-4 w-4" />
+              View Submissions
+            </Link>
+          </Button>
+
+          {/* Add Field Button & Dialog */}
+          <Dialog open={addOpen} onOpenChange={setAddOpen}>
+            <DialogTrigger asChild>
+              <Button>
+                <Plus className="mr-2 h-4 w-4" />
+                Add Field
+              </Button>
+            </DialogTrigger>
+
           <DialogContent className="sm:max-w-[425px]">
             <form onSubmit={handleCreateField}>
               <DialogHeader>
@@ -301,6 +311,7 @@ export default function FormBuilderPage({
           </DialogContent>
         </Dialog>
       </div>
+    </div>
 
       {/* Edit Field Modal */}
       <Dialog open={editOpen} onOpenChange={setEditOpen}>

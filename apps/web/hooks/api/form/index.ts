@@ -83,6 +83,22 @@ export const useSubmitForm = () => {
     }
 }
 
+export const useGetFormSubmissions = (formId: string) => {
+    const { data: submissions, error, isFetched, isFetching, isLoading, status } = trpc.form.getFormSubmissions.useQuery(
+        { formId },
+        { enabled: !!formId }
+    )
+
+    return {
+        submissions,
+        error,
+        isFetched,
+        isFetching,
+        isLoading,
+        status
+    }
+}
+
 export const useCreateField = () => {
     const utils = trpc.useUtils()
 
