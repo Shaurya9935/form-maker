@@ -1,6 +1,6 @@
 import { userService } from "../../services";
 import { authenticatedProcedure, publicProcedure, router } from "../../trpc";
-import { getAuthenticationCookie, setAuthenticationCookie } from "../../utils/cookie";
+import { setAuthenticationCookie } from "../../utils/cookie";
 import { generatePath } from "../../utils/path-generator";
 import {
   createUserWithEmailAndPasswordInputModel,

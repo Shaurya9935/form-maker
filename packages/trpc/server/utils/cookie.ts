@@ -44,7 +44,7 @@ export function clearCookieFactory(res: Response) {
 // Authentication Cookie
 const AUTHENTICATION_COOKIE_NAME = 'authentication-token'
 
-export function setAuthenticationCookie (ctx: TRPCContext, accessToken:string) {
+export function  setAuthenticationCookie (ctx: TRPCContext, accessToken:string) {
     return ctx.createCookie(AUTHENTICATION_COOKIE_NAME, accessToken)
 }
 export function getAuthenticationCookie (ctx: TRPCContext) {
